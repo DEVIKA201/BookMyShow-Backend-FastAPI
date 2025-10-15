@@ -41,7 +41,7 @@ cd bms-backend-fastapi<br>
 
 python -m venv venv<br>
 source venv/bin/activate       # Linux/Mac
-# or
+##or<br>
 venv\Scripts\activate          # Windows
 
 ###3. Install Dependencies
@@ -62,12 +62,12 @@ uvicorn main:app --reload<br>
 
 ###🧭 API Endpoints Overview
 
-Route Example	                Method	        Description
-/explore/movies-{location}	  GET	            Get all movies by location<br>
-/venues	                      GET	            Get list of venues<br>
-/shows	                      GET	            Get list of shows<br>
-/bookings	                    POST	          Create a booking<br>
-/users	                      POST	          Register or get user details<br>
+Route Example&ensp	                Method&ensp	        Description
+/explore/movies-{location}&ensp	  GET	&ensp            Get all movies by location<br>
+/venues&ensp	                      GET	&ensp            Get list of venues<br>
+/shows&ensp	                      GET&ensp            Get list of shows<br>
+/bookings&ensp	                    POST&ensp	          Create a booking<br>
+/users&ensp	                      POST&ensp	          Register or get user details<br>
 
 ###Example Request:
 
@@ -75,11 +75,11 @@ GET /explore/movies-kochi<br>
 Respose:<br>
 [<br>
 
-  {<br>
-    "_id": "670e5dd9d9eab8b4d7b7e2e0",<br>
-    "title": "Jawan",<br>
-    "rating": "8.5",<br>
-    "language": "Hindi"<br>
-  }<br>
+&ensp  {<br>
+&emsp    "_id": "670e5dd9d9eab8b4d7b7e2e0",<br>
+&emsp    "title": "Jawan",<br>
+&emsp    "rating": "8.5",<br>
+&emsp    "language": "Hindi"<br>
+&ensp  }<br>
   <br>
 ]  <br>
