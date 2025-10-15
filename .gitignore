@@ -9,7 +9,7 @@ __pycache__/
 .venv/
 env/
 venv/
-bmsenv
+bmsenv/
 
 # Databases
 *.sqlite3
