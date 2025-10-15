@@ -34,9 +34,8 @@ This project provides RESTful APIs for managing movies, shows, venues, artists, 
 
 ### 1. Clone the Repository
 
-git clone https://github.com/<your-username>/bms-backend-fastapi.git
-
-cd bms-backend-fastapi
+-git clone https://github.com/DEVIKA201/BookMyShow-Backend-FastAPI.git
+-cd bms-backend-fastapi
 
 ###2. Create & Activate Virtual Environment
 
