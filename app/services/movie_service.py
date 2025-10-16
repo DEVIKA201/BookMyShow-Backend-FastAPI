@@ -5,6 +5,8 @@ from app.schemas.movie_schema import Movie, AllMovies, MovieUpdate, MovieDelete
 from sqlalchemy.orm import Session
 from typing import List
 from sqlalchemy import text
+#debug
+import sys
 
 #create a movie
 async def create_movie_service(movie:Movie):
@@ -132,8 +134,9 @@ async def delete_movie_by_id(movie_id:str):
         raise HTTPException(status_code=404,detail="Movie doesn't exist")
     return {"message":"Movie deleted successfully"}
 
-#movie by location filter
-#async def get_movie_by_location(location_id:int, s: Session) -> List[dict]:
+##################### Filter APIs ########################
+
+###movie by location filter###
 async def get_movie_by_location(location_name:str, s: Session) -> List[dict]:
 
     #get location id for the given name of location
@@ -197,3 +200,83 @@ async def get_movie_by_location(location_name:str, s: Session) -> List[dict]:
         })
     return movies
 
+
+###movie by venue filter###
+
+
+async def get_movie_by_venue(venue_name: str, s:Session) -> List[dict]:
+    print("DEBUG - venue_name from API:", venue_name)
+    #get venue id for the given name 
+    venue_id = s.execute(text(
+        "SELECT venue_id FROM venues WHERE venue_name = :loc"),
+        {"loc":venue_name}
+    ).scalar()
+    print("DEBUG - venue_id:", venue_id)
+    
+
+
+#debug
+    print("venue_id",venue_id,type(venue_id))
+
+    if not venue_id:
+        print("No venue found")
+        return []   
+    
+    # Debugging raw screens query result
+    res = s.execute(
+        text("SELECT screen_id FROM screens WHERE venue_id = :v"),
+        {"v": venue_id}
+    )
+    print("raw screens rows:", res.fetchall())
+    
+    #get screens in those venues
+    screen_ids = s.execute(text(
+        "SELECT screen_id FROM screens WHERE venue_id = :venue"),
+        {"venue":venue_id}
+        ).fetchall()
+    screen_ids = [sc[0] for sc in screen_ids]
+
+    # ✅ Debugging screen_ids
+    print("screen_ids:", screen_ids, [type(x) for x in screen_ids])
+
+    if not screen_ids:
+        return []
+    
+    #get the distinct movie ids playing in those screens
+    movie_ids = s.execute(text(
+        "SELECT movie_id FROM shows WHERE screen_id IN :screens"),
+        {"screens":tuple(screen_ids)}
+    ).fetchall()
+    movie_ids = [m[0]for m in movie_ids]
+
+    # ✅ Debugging movie_ids
+    print("movie_ids:", movie_ids, [type(x) for x in movie_ids])
+
+    if not movie_ids:
+        return []
+    
+    #movie_id (postgres) -> objectId (mongo query)
+    object_ids = [ObjectId(m_ids) for m_ids in movie_ids]
+
+    # ✅ Debugging object_ids
+    print("object_ids:", object_ids)
+
+    #Query mongo to get those movies
+    movie_collection = db["movie_details"]
+    movie = await movie_collection.find(
+        {"_id":{"$in":object_ids}},
+        {"title":1,"rating":1,"language":1}
+    ).to_list(length=None)
+
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found at theaters near you")
+    
+    movies = []
+    for doc in movie:
+        movies.append({
+            "_id":str(doc["_id"]),
+            "title":str(doc.get("title")),
+            "rating":str(doc.get("rating")),
+            "language":str(doc.get("language"))
+        })
+    return movies

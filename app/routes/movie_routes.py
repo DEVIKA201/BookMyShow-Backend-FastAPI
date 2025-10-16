@@ -2,7 +2,7 @@ from fastapi import APIRouter,Depends
 from typing import List
 from sqlalchemy.orm import Session
 
-from app.services.movie_service import get_movies_services, create_movie_service, fetch_movie_by_id, delete_movie_by_id, update_movie_by_id, get_movie_by_location
+from app.services.movie_service import get_movies_services, create_movie_service, fetch_movie_by_id, delete_movie_by_id, update_movie_by_id, get_movie_by_location, get_movie_by_venue
 from app.schemas.movie_schema import AllMovies,Movie, MovieDelete, MovieUpdate
 from app.config.postgres_config import get_db
 
@@ -37,4 +37,8 @@ async def delete_movie(movie_id: str):
 @movie_router.get("/movies-{location_name}",response_model=List[AllMovies])
 async def get_movie_by_location_filter(location_name: str,db:Session=Depends(get_db)):
     return await get_movie_by_location(location_name, db)
-    
+
+#movie by venue filter
+@movie_router.get("/movies-{venue_name}",response_model=List[AllMovies])
+async def get_movie_by_venue_filter(venue_name: str, db:Session=Depends(get_db)):
+    return await get_movie_by_venue(venue_name,db)

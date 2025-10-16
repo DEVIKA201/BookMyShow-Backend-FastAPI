@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 
 from app.constants.enums import GenderEnum
-from app.models.postgres import user_model
+
 
 class UserBase(BaseModel):
     phone_no: Optional[str]= None

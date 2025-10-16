@@ -1,7 +1,7 @@
 from pydantic import BaseModel,Field
 from typing import Optional , List
 from datetime import datetime
-from bson import ObjectId
+
 
 from app.constants.enums import GenreEnum, FormatEnum, LanguageEnum
 from app.schemas.artist_schema import CastCrew
