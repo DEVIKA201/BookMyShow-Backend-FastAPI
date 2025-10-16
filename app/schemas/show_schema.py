@@ -27,15 +27,17 @@ class ScreenCreate(ScreenBase):
 
 class ScreenRead(ScreenBase):
     screen_id: int
-    class Config:
-        from_attributes = True
+    model_config = {
+    "from_attributes": True
+}
 
 class ScreenResponse(BaseModel):
     screen_id: int
     screen_name: str
 
-    class Config:
-        orm_mode = True
+    model_config = {
+    "from_attributes": True
+}
         
 class VenueResponse(BaseModel):
     venue_id: int
@@ -44,8 +46,9 @@ class VenueResponse(BaseModel):
     facilities: Optional[dict]
     screens: List[ScreenResponse] = [] 
 
-    class Config:
-        orm_mode = True
+    model_config = {
+    "from_attributes": True
+}
 
 ######### shows #############
 class ShowBase(BaseModel):
@@ -60,9 +63,9 @@ class ShowCreate(ShowBase):
 
 class ShowRead(ShowBase):
     movie_id: str
-    class Config:
-        from_attributes: True
-
+    model_config = {
+    "from_attributes": True
+}
 class ShowInfo(BaseModel):
     screen_id: int
     screen_name: str
@@ -75,5 +78,6 @@ class ShowVenueResponse(BaseModel):
     venue_name: str
     shows : List[ShowInfo]
 
-    class Config:
-        orm_mode = True
+    model_config = {
+    "from_attributes": True
+}

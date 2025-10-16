@@ -30,8 +30,10 @@ class Movie(BaseModel):
     cast: Optional[List[CastCrew]] = None
     crew: Optional[List[CastCrew]] = None
 
-class Config:
-    populate_by_name = True
+    model_config = {
+    "from_attributes": True
+}
+
 
 class MovieUpdate(Movie):
     title: Optional[str] =None

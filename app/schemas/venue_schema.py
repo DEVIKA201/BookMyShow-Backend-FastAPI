@@ -13,8 +13,9 @@ class LocationCreate(LocationBase):
 class LocationRead(LocationBase):
     location_id: Optional[int]=None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+    "from_attributes": True
+}
 
 ###### venue ######
 class VenueBase(BaseModel):
@@ -28,8 +29,9 @@ class VenueCreate(VenueBase):
 
 class VenueRead(VenueBase):
     venue_id:Optional[int]=None
-    class Config:
-        from_attributes = True
+    model_config = {
+    "from_attributes": True
+}
 
 
 
