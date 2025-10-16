@@ -39,6 +39,6 @@ async def get_movie_by_location_filter(location_name: str,db:Session=Depends(get
     return await get_movie_by_location(location_name, db)
 
 #movie by venue filter
-@movie_router.get("/movies-{venue_name}",response_model=List[AllMovies])
+@movie_router.get("/cinemas-{venue_name}",response_model=List[AllMovies])
 async def get_movie_by_venue_filter(venue_name: str, db:Session=Depends(get_db)):
     return await get_movie_by_venue(venue_name,db)
