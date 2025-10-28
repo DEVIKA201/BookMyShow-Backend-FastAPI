@@ -16,11 +16,13 @@ async def create_show_schedules(schedule:ShowScheduleCreate, db: Session= Depend
 #create show timings
 @show_router.post("/schedule/timings/", response_model=list[ShowTimingRead])
 async def create_timings_for_schedule(
+    schedule_id: int,
     timings: list[ShowTimingCreate],
+    days_ahead :int =10,
     db: Session = Depends(get_db),
     db_mongo = Depends(get_mongo_db)
-):
-    return await create_schedule_timings(db, db_mongo, timings)
+    ):
+    return await create_schedule_timings(db, db_mongo,schedule_id, timings, days_ahead)
 
 #get shows by movie name and location name
 @show_router.get("/movies/{location_name}/{movie_name}/buytickets/")

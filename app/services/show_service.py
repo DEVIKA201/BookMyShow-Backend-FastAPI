@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 from fastapi import HTTPException
 
@@ -16,65 +16,77 @@ def create_schedule(db: Session, schedule_info: ShowScheduleCreate):
     db.refresh(schedule)
     return schedule
 
-############### SHOW CREATE SERVICE ####################
-async def create_schedule_timings(db: Session, db_mongo, schedule_id: int, timings_info: list[ShowTimingCreate]):
-    #Fetch movie_id from Postgres
-    schedule = db.query(ShowSchedule).filter(ShowSchedule.schedule_id == schedule_id).first()
-    if not schedule:
-        raise HTTPException(status_code=404, detail="Schedule not found")
-
-    movie_id = schedule.movie_id
-
-    #Fetch allowed language and format from MongoDB
-    movie_doc = await db_mongo["movie_details"].find_one({"_id": ObjectId(movie_id)}, {"language": 1, "format": 1})
-    if not movie_doc:
-        raise HTTPException(status_code=404, detail="Movie details not found in MongoDB")
-
-    allowed_languages = movie_doc.get("language", [])
-    allowed_formats = movie_doc.get("format", [])
-
-    #Validate and create timings
-    timings = []
-    for timing in timings_info:
-        if timing.language not in allowed_languages:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid language '{timing.language}'. Allowed: {allowed_languages}"
-            )
-        if timing.format.value not in allowed_formats: 
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid format '{timing.format.value}'. Allowed: {allowed_formats}"
-            )
-
-        t = ShowTiming(schedule_id=schedule_id, **timing.model_dump(exclude=("schedule_id")))
-        db.add(t)
-        timings.append(t)
-
-    db.commit()
-    for t in timings:
-        db.refresh(t)
-    return timings
-
-############################################################
-
-
 ############### MARK COMPLETED SHOWS #######################
-
 def completed_shows(db:Session):
     current_date = datetime.now().date()
     current_time = datetime.now().time()
+    #1. past shows --> completed
     db.query(ShowTiming).filter(
         ShowTiming.show_date < current_date,
         ShowTiming.is_active == True
     ).update({ShowTiming.is_completed:True, ShowTiming.is_active:False})
+    #2. today's show, but time passed --> completed
     db.query(ShowTiming).filter(
         ShowTiming.show_date ==current_date,
         ShowTiming.show_time<current_time,
         ShowTiming.is_active == True).update({
             ShowTiming.is_active : False, ShowTiming.is_completed: True
         })
+    #3. activate next day
+    next_day = current_date+timedelta(days=1)
+    db.query(ShowTiming).filter(
+        ShowTiming.show_date==next_day,
+        ShowTiming.is_completed ==False).update({ShowTiming.is_active:True})
+    
     db.commit()
+
+
+############### SHOW CREATE SERVICE ####################
+async def create_schedule_timings(db:Session, db_mongo, schedule_id: int, timings_info: list[ShowScheduleCreate], days_ahead :int = 10):
+    completed_shows(db)
+
+    schedule = db.query(ShowSchedule).filter(ShowSchedule.schedule_id==schedule_id).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule does not exist")
+    
+    movie_id = schedule.movie_id
+    movie_info = await db_mongo["movie_details"].find_one({"_id":ObjectId(movie_id)}, {"language":1,"format":1})
+    if not movie_info:
+        raise HTTPException(status_code=404, detail="Movie does not exist")
+    
+    allowed_languages = movie_info.get("language",[])
+    allowed_formats = movie_info.get("format",[])
+
+    today = datetime.now().date()
+    timings = []
+
+    for timing in timings_info:
+        if timing.language not in allowed_languages:
+            raise HTTPException(status_code=400, detail=f"Invalid language '{timing.language}'. Allowed:{allowed_languages}")
+        if timing.format.value not in allowed_formats:
+            raise HTTPException(status_code=400, detail=f"Invalid format '{timing.format.value}'. Allowed:{allowed_formats}")
+        
+        for day_offset in range(days_ahead):
+            show_date = today + timedelta(days = day_offset)
+
+            is_active = day_offset <= 2
+            t = ShowTiming(
+                schedule_id=schedule_id,
+                show_date=show_date,
+                show_time=timing.show_time,
+                language=timing.language,
+                format=timing.format,
+                is_active=is_active,
+                is_completed=False
+            )
+            db.add(t)
+            timings.append(t)
+
+    db.commit()
+    for t in timings:
+        db.refresh(t)
+    return timings
+
 
 ############## GET LOCATION AND MOVIE INFO #################
 
@@ -182,6 +194,9 @@ async def get_shows_by_movie_and_location(db_pg: Session, db_mongo, location_nam
 
     if not format or not language:
         options = await get_available_options(db_pg, movie_id, location_id)
+        #debug
+        print(options)
+        
         if not options["formats"] and not options["languages"]:
             raise HTTPException(status_code=404, detail="No running shows")
         return {
