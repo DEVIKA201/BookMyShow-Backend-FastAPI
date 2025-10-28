@@ -1,83 +1,33 @@
 from pydantic import BaseModel
-from typing import Optional, List
 from datetime import date, time
+from app.constants.enums import FormatEnum, LanguageEnum
 
-######### seat layout for screen #####
-class SeatRow(BaseModel):
-    row: str
-    seats : List[int]
-
-class SeatCategory(BaseModel):
-    name: str
-    price: float
-    rows: List[str]
-
-class SeatLayout(BaseModel):
-    rows: List[SeatRow]
-    category: List[SeatCategory]
-
-######### screen #########
-class ScreenBase(BaseModel):
-    screen_name: str
-    venue_id: int
-    seat_layout: SeatLayout
-
-class ScreenCreate(ScreenBase):
-    pass
-
-class ScreenRead(ScreenBase):
-    screen_id: int
-    model_config = {
-    "from_attributes": True
-}
-
-class ScreenResponse(BaseModel):
-    screen_id: int
-    screen_name: str
-
-    model_config = {
-    "from_attributes": True
-}
-        
-class VenueResponse(BaseModel):
-    venue_id: int
-    venue_name: str
-    description: Optional[str]
-    facilities: Optional[dict]
-    screens: List[ScreenResponse] = [] 
-
-    model_config = {
-    "from_attributes": True
-}
-
-######### shows #############
-class ShowBase(BaseModel):
+######### SHOW SCHEDULE - movie #########
+class ShowSchedules(BaseModel):
     movie_id : str
     screen_id : int
-    date : date
-    time : time
-    language : str
+    venue_id: int
 
-class ShowCreate(ShowBase):
+class ShowScheduleCreate(ShowSchedules):
     pass
 
-class ShowRead(ShowBase):
-    movie_id: str
-    model_config = {
-    "from_attributes": True
-}
-class ShowInfo(BaseModel):
-    screen_id: int
-    screen_name: str
-    date: date
-    time: time
+class ShowScheduleRead(ShowSchedules):
+    schedule_id : int
+    model_config={"from_attributes":True}
+
+######### SHOW TIMINGS #########
+class ShowScheduleTimings(BaseModel):
+    schedule_id : int
     language : str
+    format : FormatEnum
+    show_date : date
+    show_time : time
+    is_active : bool
+    is_completed : bool
 
-class ShowVenueResponse(BaseModel):
-    venue_id : int
-    venue_name: str
-    shows : List[ShowInfo]
+class ShowTimingCreate(ShowScheduleTimings):
+    pass 
 
-    model_config = {
-    "from_attributes": True
-}
+class ShowTimingRead(ShowScheduleTimings):
+    show_id : int
+    model_config ={"from_attributes": True}

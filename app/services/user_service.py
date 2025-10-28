@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.postgres.user_model import User
-from app.schemas.user_schema import UserBase, UserCreate, UserRead, UserUpdate
+from app.schemas.user_schema import UserCreate, UserUpdate
 
 ############ User CRUD #########
 

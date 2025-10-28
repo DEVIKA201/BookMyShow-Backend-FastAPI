@@ -9,3 +9,6 @@ MONGO_DB=os.getenv("MONGO_DB")
 
 client = AsyncIOMotorClient(MONGO_DATABASE_URL)
 db = client[MONGO_DB]
+
+def get_mongo_db():
+    return db

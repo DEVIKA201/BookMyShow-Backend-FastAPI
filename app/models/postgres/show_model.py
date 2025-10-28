@@ -1,27 +1,32 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time
+from sqlalchemy import Column, Integer, String, Boolean,ForeignKey, Date, Time,Enum
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import JSONB
+from app.constants.enums import LanguageEnum,FormatEnum
 
 from app.models.postgres import Base
 
-class Show(Base):
-    __tablename__="shows"
-    show_id = Column(Integer, primary_key=True)
+class ShowSchedule(Base):
+    __tablename__="show_schedules"
+
+    schedule_id = Column(Integer,primary_key=True)
     movie_id = Column(String, index=True)
     screen_id = Column(Integer, ForeignKey("screens.screen_id"))
-    date = Column(Date)
-    time = Column(Time)
-    language = Column(String)
-
-    screen = relationship("Screen",back_populates="shows")
-    bookings = relationship("Booking", back_populates="shows")
-
-class Screen(Base):
-    __tablename__="screens"
-    screen_id = Column(Integer, primary_key=True)
-    screen_name = Column(String)
     venue_id = Column(Integer, ForeignKey("venues.venue_id"))
-    seat_layout = Column(JSONB)
 
-    venue = relationship("Venue", back_populates="screens")
-    shows = relationship("Show",back_populates="screen")
+    screen = relationship("Screen",back_populates="schedules")
+    venue = relationship("Venue",back_populates="schedules")
+    timings = relationship("ShowTiming", back_populates="schedule",cascade="all, delete")
+
+class ShowTiming(Base):
+    __tablename__="show_timings"
+
+    show_id = Column(Integer,primary_key=True)
+    schedule_id = Column(Integer,ForeignKey("show_schedules.schedule_id"))
+    language = Column(Enum(LanguageEnum))
+    format = Column(Enum(FormatEnum, values_callable=lambda x: [e.value for e in x]),nullable=False)
+    show_date = Column(Date)
+    show_time = Column(Time)
+    is_active = Column(Boolean,default=True)
+    is_completed = Column(Boolean,default=False)
+
+    schedule = relationship("ShowSchedule",back_populates="timings")
+

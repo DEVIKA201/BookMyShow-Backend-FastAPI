@@ -33,5 +33,46 @@ class VenueRead(VenueBase):
     "from_attributes": True
 }
 
+######### SEAT LAYOUT #########
+class SeatRow(BaseModel):
+    row: str
+    seats : List[int]
+
+class SeatCategory(BaseModel):
+    name: str
+    price: float
+    rows: List[str]
+
+class SeatLayout(BaseModel):
+    rows: List[SeatRow]
+    category: List[SeatCategory]
+
+######### SCREEN #########
+class ScreenBase(BaseModel):
+    screen_name: str
+    venue_id: int
+    seat_layout: SeatLayout
+
+class ScreenCreate(ScreenBase):
+    pass
+
+class ScreenResponse(ScreenBase):
+    screen_id: int
+
+    model_config = {
+    "from_attributes": True
+}
+        
+        
+class VenueResponse(BaseModel):
+    venue_id: int
+    venue_name: str
+    description: Optional[str]
+    facilities: Optional[dict]
+    screens: List[ScreenResponse] = [] 
+
+    model_config = {
+    "from_attributes": True
+}
 
 

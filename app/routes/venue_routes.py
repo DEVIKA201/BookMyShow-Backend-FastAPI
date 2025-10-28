@@ -1,12 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Optional, List
+from fastapi import APIRouter, Depends
+from typing import List
 from sqlalchemy.orm import Session
 
 from app.config.postgres_config import get_db
-from app.schemas.venue_schema import LocationCreate, LocationRead, VenueCreate, VenueRead
-from app.services.venue_service import read_location, create_location, create_venue, read_venue
-from app.schemas.show_schema import ScreenCreate, ScreenRead
-from app.services.show_service import read_screen,create_screen
+from app.schemas.venue_schema import LocationCreate, LocationRead, VenueCreate, VenueRead, ScreenCreate, ScreenResponse
+from app.services.venue_service import read_location, create_location, create_venue, read_venue, read_screen, create_screen
+
 
 ########## Location #########
 location_router = APIRouter(prefix="/locations", tags=["Locations"])
@@ -46,7 +45,7 @@ screen_router = APIRouter(prefix="/screens",tags=["Screens"])
 async def create_screens(screen:ScreenCreate,db: Session=Depends(get_db)):
     return create_screen(db, screen)
     
-@screen_router.get("/",response_model=List[ScreenRead])
+@screen_router.get("/",response_model=List[ScreenResponse])
 async def get_screen(db:Session=Depends(get_db)):
     screen = read_screen(db)
     return screen

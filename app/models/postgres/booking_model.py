@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey,Enum, DateTime
+'''from sqlalchemy import Column, Integer, ForeignKey,Enum, DateTime
 from sqlalchemy.orm import relationship
 
 from app.constants.enums import BookingEnum
@@ -12,5 +12,5 @@ class Booking(Base):
     booking_status = Column(Enum(BookingEnum))
     booking_date = Column(DateTime)
 
-    shows = relationship("Show", back_populates="bookings")
     users = relationship("User",back_populates='bookings')
+    '''

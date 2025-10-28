@@ -1,12 +1,11 @@
 from fastapi import HTTPException
 from bson import ObjectId
-from app.config.mongo_config import db
-from app.schemas.movie_schema import Movie, AllMovies, MovieUpdate, MovieDelete
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from sqlalchemy import text
-#debug
-import sys
+
+from app.config.mongo_config import db
+from app.schemas.movie_schema import Movie, MovieUpdate
 
 #create a movie
 async def create_movie_service(movie:Movie):
@@ -136,8 +135,11 @@ async def delete_movie_by_id(movie_id:str):
 
 ##################### Filter APIs ########################
 
-###movie by location filter###
-async def get_movie_by_location(location_name:str, s: Session) -> List[dict]:
+###movie by filters###
+async def get_movie_by_filter(location_name:str, s: Session,
+                              language:Optional[str]=None, 
+                              genre: Optional[str]=None,
+                              format:Optional[str]=None) -> List[dict]:
 
     #get location id for the given name of location
     location_id = s.execute(text(
@@ -169,7 +171,7 @@ async def get_movie_by_location(location_name:str, s: Session) -> List[dict]:
     
     #get the distinct movie ids playing in those screens
     movie_ids = s.execute(text(
-        "SELECT movie_id FROM shows WHERE screen_id IN :screens"),
+        "SELECT movie_id FROM show_schedules WHERE screen_id IN :screens"),
         {"screens":tuple(screen_ids)}
     ).fetchall()
     movie_ids = [m[0]for m in movie_ids]
@@ -180,11 +182,26 @@ async def get_movie_by_location(location_name:str, s: Session) -> List[dict]:
     #movie_id (postgres) -> objectId (mongo query)
     object_ids = [ObjectId(m_ids) for m_ids in movie_ids]
 
+    mongo_filter = {"_id":{"$in":object_ids}}
+    #---Language filter
+    if language:
+        language_list = [l.strip().capitalize() for l in language.split("|")]
+        mongo_filter["language"] = {"$in":language_list}
+    #---Genre filter
+    if genre:
+        genre_list = [g.strip().capitalize() for g in genre.split("|")]
+        mongo_filter["genre"] = {"$in":genre_list}
+
+    #--Format filter
+    if format:
+        format_list = [f.strip() for f in format.split("|")]
+        mongo_filter["format"] = {"$in":format_list}
+
     #Query mongo to get those movies
     movie_collection = db["movie_details"]
     movie = await movie_collection.find(
-        {"_id":{"$in":object_ids}},
-        {"title":1,"rating":1,"language":1}
+        mongo_filter,
+        {"title":1,"rating":1,"language":1,"genre":1,"format":1}
     ).to_list(length=None)
 
     if not movie:
@@ -196,10 +213,11 @@ async def get_movie_by_location(location_name:str, s: Session) -> List[dict]:
             "_id":str(doc["_id"]),
             "title":str(doc.get("title")),
             "rating":str(doc.get("rating")),
-            "language":str(doc.get("language"))
+            "language":str(doc.get("language")),
+            "genre":str(doc.get("genre")),
+            "format":str(doc.get("format"))
         })
     return movies
-
 
 ###movie by venue filter###
 async def get_movie_by_venue(venue_name: str, s:Session) -> List[dict]:
@@ -223,7 +241,7 @@ async def get_movie_by_venue(venue_name: str, s:Session) -> List[dict]:
     
     #get the distinct movie ids playing in those screens
     movie_ids = s.execute(text(
-        "SELECT movie_id FROM shows WHERE screen_id IN :screens"),
+        "SELECT movie_id FROM show_schedules WHERE screen_id IN :screens"),
         {"screens":tuple(screen_ids)}
     ).fetchall()
     movie_ids = [m[0]for m in movie_ids]

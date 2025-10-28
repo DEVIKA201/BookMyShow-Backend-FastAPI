@@ -1,29 +1,38 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import HTTPException, APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.config.mongo_config import get_mongo_db
 from app.config.postgres_config import get_db
-from app.models.postgres.show_model import Show
-from app.schemas.show_schema import ShowCreate, ShowRead
-from app.services.show_service import create_show, read_show,get_show_by_movie
-from app.services.movie_service import fetch_movie_by_id
+from app.schemas.show_schema import ShowScheduleCreate,ShowScheduleRead,ShowTimingCreate,ShowTimingRead
+from app.services.show_service import create_schedule,create_schedule_timings, get_shows_by_movie_and_location , get_movieshows_for_venue
 
-########## Shows #########
-show_router = APIRouter(prefix="/shows", tags=["Shows"])
+show_router = APIRouter(tags=["Shows"])
 
-#create show
-@show_router.post("/",response_model=ShowRead)
-async def create_new_show(show:ShowCreate, db:Session=Depends(get_db)):
-    return create_show(db,show)
+#create schedule
+@show_router.post("/schedule/",response_model=ShowScheduleRead)
+async def create_show_schedules(schedule:ShowScheduleCreate, db: Session= Depends(get_db)):
+    return create_schedule(db,schedule)
 
-#get show by movies
-@show_router.get("/{movie_id}")
-async def get_shows_by_movie(movie_id:str,db:Session=Depends(get_db)):
-    movie = await fetch_movie_by_id(movie_id)
-    if not movie:
-        raise HTTPException(status_code=404, detail="Movie not found")
-    shows = get_show_by_movie(db,movie_id)
+#create show timings
+@show_router.post("/schedule/{schedule_id}/timings/", response_model=list[ShowTimingRead])
+async def create_timings_for_schedule(
+    schedule_id: int,
+    timings: list[ShowTimingCreate],
+    db: Session = Depends(get_db),
+    db_mongo = Depends(get_mongo_db)
+):
+    return await create_schedule_timings(db, db_mongo, schedule_id, timings)
+
+#get shows by movie name and location name
+@show_router.get("/movies/{location_name}/{movie_name}/buytickets/")
+async def get_shows(location_name: str, movie_name: str, format:str=None, language:str=None,
+                    db_pg: Session=Depends(get_db), db_mongo:Session= Depends(get_mongo_db)):
+    return await get_shows_by_movie_and_location(db_pg, db_mongo, location_name,movie_name, language, format )
     
-    return{
-        "movie":movie,
-        "shows":shows
-    }
+#get shows by venue name
+@show_router.get("/cinemas/{location_name}/{venue_name}/buytickets/")
+async def get_movie_by_venue(location_name:str, venue_name:str, db:Session=Depends(get_db),db_mongo:Session=Depends(get_mongo_db)):
+    res = await get_movieshows_for_venue(db, venue_name,location_name,db_mongo)
+    if not res:
+        raise HTTPException(status_code=404)
+    return res

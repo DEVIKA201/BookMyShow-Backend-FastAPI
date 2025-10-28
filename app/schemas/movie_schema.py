@@ -10,7 +10,9 @@ class AllMovies(BaseModel):
     id: str = Field(None, alias="_id")
     title: str
     rating: str
-    language: LanguageEnum
+    language: Optional[LanguageEnum] =None
+    genre : Optional[GenreEnum]=None
+    format : Optional[FormatEnum]=None
 
 class Movie(BaseModel):
     id: Optional[str] = Field(None,alias="_id")
