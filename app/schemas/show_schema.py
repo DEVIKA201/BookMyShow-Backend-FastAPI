@@ -22,8 +22,8 @@ class ShowScheduleTimings(BaseModel):
     format : FormatEnum
     show_date : date
     show_time : time
-    is_active : bool
-    is_completed : bool
+    is_active : bool =True
+    is_completed : bool = False
 
 class ShowTimingCreate(ShowScheduleTimings):
     pass 

@@ -14,14 +14,13 @@ async def create_show_schedules(schedule:ShowScheduleCreate, db: Session= Depend
     return create_schedule(db,schedule)
 
 #create show timings
-@show_router.post("/schedule/{schedule_id}/timings/", response_model=list[ShowTimingRead])
+@show_router.post("/schedule/timings/", response_model=list[ShowTimingRead])
 async def create_timings_for_schedule(
-    schedule_id: int,
     timings: list[ShowTimingCreate],
     db: Session = Depends(get_db),
     db_mongo = Depends(get_mongo_db)
 ):
-    return await create_schedule_timings(db, db_mongo, schedule_id, timings)
+    return await create_schedule_timings(db, db_mongo, timings)
 
 #get shows by movie name and location name
 @show_router.get("/movies/{location_name}/{movie_name}/buytickets/")

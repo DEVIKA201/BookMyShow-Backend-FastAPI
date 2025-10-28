@@ -135,7 +135,7 @@ async def delete_movie_by_id(movie_id:str):
 
 ##################### Filter APIs ########################
 
-###movie by filters###
+###movie by location###
 async def get_movie_by_filter(location_name:str, s: Session,
                               language:Optional[str]=None, 
                               genre: Optional[str]=None,
@@ -216,58 +216,5 @@ async def get_movie_by_filter(location_name:str, s: Session,
             "language":str(doc.get("language")),
             "genre":str(doc.get("genre")),
             "format":str(doc.get("format"))
-        })
-    return movies
-
-###movie by venue filter###
-async def get_movie_by_venue(venue_name: str, s:Session) -> List[dict]:
-    venue_id = s.execute(text(
-        "SELECT venue_id FROM venues WHERE venue_name = :ven"),
-        {"ven":venue_name}
-    ).scalar()
-
-    if not venue_id:
-        return []   
-    
-    #get screens in those venues
-    screen_ids = s.execute(text(
-        "SELECT screen_id FROM screens WHERE venue_id = :venue"),
-        {"venue":venue_id}
-        ).fetchall()
-    screen_ids = [sc[0] for sc in screen_ids]
-
-    if not screen_ids:
-        return []
-    
-    #get the distinct movie ids playing in those screens
-    movie_ids = s.execute(text(
-        "SELECT movie_id FROM show_schedules WHERE screen_id IN :screens"),
-        {"screens":tuple(screen_ids)}
-    ).fetchall()
-    movie_ids = [m[0]for m in movie_ids]
-
-    if not movie_ids:
-        return []
-    
-    #movie_id (postgres) -> objectId (mongo query)
-    object_ids = [ObjectId(m_ids) for m_ids in movie_ids]
-
-    #Query mongo to get those movies
-    movie_collection = db["movie_details"]
-    movie = await movie_collection.find(
-        {"_id":{"$in":object_ids}},
-        {"title":1,"rating":1,"language":1}
-    ).to_list(length=None)
-
-    if not movie:
-        raise HTTPException(status_code=404, detail="Movie not found in theaters near you")
-    
-    movies = []
-    for doc in movie:
-        movies.append({
-            "_id":str(doc["_id"]),
-            "title":str(doc.get("title")),
-            "rating":str(doc.get("rating")),
-            "language":str(doc.get("language"))
         })
     return movies

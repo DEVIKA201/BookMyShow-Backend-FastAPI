@@ -239,6 +239,7 @@ async def get_movieshows_for_venue(db:Session, venue_name:str, location_name:str
     except HTTPException:
         return {"message": "no venue found"}
 
+    #fetch venue info
     venue_query = text("""
         SELECT v.venue_id, v.venue_name, l.location_id, l.name
         FROM venues v
@@ -250,6 +251,7 @@ async def get_movieshows_for_venue(db:Session, venue_name:str, location_name:str
     if not venue_info:
         return {"message":"No theater found"}
 
+    #fetch show timings in the venue
     query = text("""
         SELECT ss.movie_id, st.show_id, st.show_date, st.show_time, st.language, st.format, ss.screen_id, s.screen_name
         FROM show_timings st
