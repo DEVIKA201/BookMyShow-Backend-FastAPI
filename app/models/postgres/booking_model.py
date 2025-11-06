@@ -1,16 +1,21 @@
-'''from sqlalchemy import Column, Integer, ForeignKey,Enum, DateTime
-from sqlalchemy.orm import relationship
-
-from app.constants.enums import BookingEnum
+from sqlalchemy import Column, Integer, ForeignKey, Float, String,DateTime, func, Date, Time
+from sqlalchemy.dialects.postgresql import JSONB
 from app.models.postgres import Base
 
-class Booking(Base):
-    __tablename__ = "bookings"
-    id = Column(Integer,primary_key=True)
-    user_id = Column(Integer,ForeignKey("users.user_id"))
-    show_id = Column(Integer,ForeignKey("shows.show_id"))
-    booking_status = Column(Enum(BookingEnum))
-    booking_date = Column(DateTime)
+class BookingDetail(Base):
+    """
+    One booking entry per user action.
+    Up to 10 seats stored together.
+    """
+    __tablename__ = "booking_details"
 
-    users = relationship("User",back_populates='bookings')
-    '''
+    booking_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"))
+    schedule_id = Column(Integer, ForeignKey("show_schedules.schedule_id"))
+    show_date = Column(Date, nullable=False)
+    show_time = Column(Time, nullable=False)
+    language = Column(String, nullable=False)
+    format = Column(String, nullable=False)
+    total_amount = Column(Float)
+    booked_at = Column(DateTime, default=func.now())
+    seats = Column(JSONB)  # [{row, seat_number, category, price}]

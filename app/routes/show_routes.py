@@ -8,20 +8,14 @@ from app.services.show_service import create_schedule,create_schedule_timings, g
 
 show_router = APIRouter(tags=["Shows"])
 
-#create schedule
+#create show schedule
 @show_router.post("/schedule/",response_model=ShowScheduleRead)
 async def create_show_schedules(schedule:ShowScheduleCreate, db: Session= Depends(get_db)):
     return create_schedule(db,schedule)
 
 #create show timings
 @show_router.post("/schedule/timings/", response_model=list[ShowTimingRead])
-async def create_timings_for_schedule(
-    schedule_id: int,
-    timings: list[ShowTimingCreate],
-    days_ahead :int =10,
-    db: Session = Depends(get_db),
-    db_mongo = Depends(get_mongo_db)
-    ):
+async def create_timings_for_schedule(schedule_id: int,timings: list[ShowTimingCreate],days_ahead :int =10, db: Session = Depends(get_db), db_mongo = Depends(get_mongo_db)):
     return await create_schedule_timings(db, db_mongo,schedule_id, timings, days_ahead)
 
 #get shows by movie name and location name

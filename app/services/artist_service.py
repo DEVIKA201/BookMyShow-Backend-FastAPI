@@ -4,14 +4,14 @@ from fastapi import HTTPException
 from app.config.mongo_config import db
 from app.schemas.artist_schema import Artist,UpdateArtist
 
-#Create new artist
+############### Create new artist ##############
 async def create_artist(artist: Artist):
     artist_dict = artist.model_dump(by_alias=True, exclude_none=True)
     result = await db["artist_details"].insert_one(artist_dict)
     artist_dict["_id"] = str(result.inserted_id)
     return artist_dict 
 
-#Fetch artist 
+############### Fetch artist ##############
 async def get_artists():
     people = await db["artist_details"].find().to_list()
     convert_id_to_string = []
@@ -20,7 +20,7 @@ async def get_artists():
         convert_id_to_string.append(artist)
     return convert_id_to_string 
 
-#Fetch artist by id
+############## Fetch artist by id ##############
 #get the artist details - peers, family and more
 async def get_artist_by_id(artist_id:str):
     pipeline = [
@@ -98,7 +98,7 @@ async def get_artist_by_id(artist_id:str):
     person["_id"]=str(person["_id"])
     return person
 
-#Update an artist
+############### Update an artist ##############
 async def update_artist(artist_id: str, artist: UpdateArtist):
     update_data = artist.model_dump(by_alias=True, exclude_none=True)
     result = await db["artist_details"].update_one(
@@ -111,7 +111,7 @@ async def update_artist(artist_id: str, artist: UpdateArtist):
     updated_artist["_id"] = str(updated_artist["_id"])
     return updated_artist    
 
-#Delete artist
+############### Delete artist ##############
 async def soft_delete_artist(artist_id: str):
     result = await db["artist_details"].update_one(
         {"_id":ObjectId(artist_id),"is_available":True},

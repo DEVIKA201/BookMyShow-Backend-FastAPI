@@ -73,7 +73,9 @@ class GenderEnum(str, Enum):
 
 ######## Seat Status Enums #########
 class SeatStatus(str,Enum):
-    Sold = "Sold"
+    Sold_Out = "Sold Out"
     Selected = "Selected"
     Available = "Available"
     Bestseller = "Bestseller"
+    Filling_Fast = "Filling Fast"
+    Almost_Full = "Almost Full"

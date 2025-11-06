@@ -1,18 +1,15 @@
 from pydantic import BaseModel
-from datetime import date
+from typing import List
+from datetime import datetime, timezone
 
-######### Booking ########
-class BookingBase(BaseModel):
-    user_id :int
-    show_id : int
-    booking_status : str
-    booking_date : date
+from app.schemas.seatlayout_schema import LockSeatsRequest, SeatInfo
 
-class BookingCreate(BookingBase):
+class ConfirmBookingRequest(LockSeatsRequest):
     pass
 
-class BookingRead(BookingBase):
-    id: int
-    model_config = {
-    "from_attributes": True
-}
+class BookingResponse(BaseModel):
+    booking_id: int
+    total_amount: float
+    seats: List[SeatInfo]
+    booked_at: datetime = datetime.now(timezone.utc)
+    

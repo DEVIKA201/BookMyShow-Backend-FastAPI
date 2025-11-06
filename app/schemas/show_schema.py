@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from datetime import date, time
-from app.constants.enums import FormatEnum, LanguageEnum
+from datetime import time, date, timezone
+from app.constants.enums import FormatEnum
 
 ######### SHOW SCHEDULE - movie #########
 class ShowSchedules(BaseModel):

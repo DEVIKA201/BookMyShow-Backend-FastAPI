@@ -20,23 +20,29 @@ def create_schedule(db: Session, schedule_info: ShowScheduleCreate):
 def completed_shows(db:Session):
     current_date = datetime.now().date()
     current_time = datetime.now().time()
+    
     #1. past shows --> completed
     db.query(ShowTiming).filter(
         ShowTiming.show_date < current_date,
         ShowTiming.is_active == True
-    ).update({ShowTiming.is_completed:True, ShowTiming.is_active:False})
+    ).update({ShowTiming.is_completed:True, ShowTiming.is_active:False}, synchronize_session=False)
+    
     #2. today's show, but time passed --> completed
     db.query(ShowTiming).filter(
         ShowTiming.show_date ==current_date,
         ShowTiming.show_time<current_time,
         ShowTiming.is_active == True).update({
-            ShowTiming.is_active : False, ShowTiming.is_completed: True
-        })
+            ShowTiming.is_active : False, ShowTiming.is_completed: True},synchronize_session=False
+            )
+    
     #3. activate next day
-    next_day = current_date+timedelta(days=1)
+    activate_dates = [current_date+timedelta(days=i) for i in range(3)]
+
+    #next_day = current_date+timedelta(days=1)
     db.query(ShowTiming).filter(
-        ShowTiming.show_date==next_day,
-        ShowTiming.is_completed ==False).update({ShowTiming.is_active:True})
+        ShowTiming.show_date.in_(activate_dates),
+        ShowTiming.show_date>=current_date,
+        ShowTiming.is_completed ==False).update({ShowTiming.is_active:True}, synchronize_session=False)
     
     db.commit()
 

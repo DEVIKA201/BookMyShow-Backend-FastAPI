@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer,String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
-from app.constants.enums import FacilitiesEnum
 
 from app.models.postgres import Base
 

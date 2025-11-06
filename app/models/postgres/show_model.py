@@ -15,6 +15,8 @@ class ShowSchedule(Base):
     screen = relationship("Screen",back_populates="schedules")
     venue = relationship("Venue",back_populates="schedules")
     timings = relationship("ShowTiming", back_populates="schedule",cascade="all, delete")
+    seat_map = relationship("ShowSeatMap", back_populates="schedule", uselist=False, cascade="all, delete")
+
 
 class ShowTiming(Base):
     __tablename__="show_timings"

@@ -15,7 +15,7 @@ async def create_new_user(user:UserCreate, db:Session= Depends(get_db)):
     return create_user(db, user)
 
 ############ get user ############
-@user_router.get("/{user_id}", response_model=UserRead) # get user by user id
+@user_router.get("/{user_id}", response_model=UserRead)
 async def get_users(
     user_id : Optional[int] = None,
     db: Session = Depends(get_db)

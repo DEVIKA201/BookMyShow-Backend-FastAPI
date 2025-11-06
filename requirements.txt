@@ -1,5 +1,6 @@
 annotated-types==0.7.0
 anyio==4.10.0
+APScheduler==3.11.1
 click==8.2.1
 dnspython==2.8.0
 email-validator==2.3.0
@@ -19,4 +20,5 @@ SQLAlchemy==2.0.43
 starlette==0.47.3
 typing-inspection==0.4.1
 typing_extensions==4.15.0
+tzlocal==5.3.1
 uvicorn==0.35.0

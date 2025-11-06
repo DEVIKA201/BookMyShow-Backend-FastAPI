@@ -30,5 +30,5 @@ class User(Base):
         ),
     )
 
-    #bookings = relationship("Booking",back_populates='users')
     locations = relationship("Location", back_populates="users")
+    

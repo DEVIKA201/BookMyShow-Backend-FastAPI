@@ -18,7 +18,7 @@ class Artist(BaseModel):
     children: Optional[int] = None #count of children
     about : str
     spouse : Optional[str] = None
-    family : Optional[List[CastCrew]] = None  #list of family and peer
+    family : Optional[List[CastCrew]] = None  
     peer_and_more : Optional[List[CastCrew]] = None
     is_available: bool = True
 
@@ -30,7 +30,7 @@ class UpdateArtist(Artist):
     children: Optional[int] = None #count of children
     about : Optional[str] = None
     spouse : Optional[str] = None
-    family : Optional[List[CastCrew]] = None  #list of family and peer
+    family : Optional[List[CastCrew]] = None  
     peer_and_more : Optional[List[CastCrew]] = None  
     is_available: bool = True
 
