@@ -10,7 +10,6 @@ class CastCrew(BaseModel):
 
 ######### Artist details ########
 class Artist(BaseModel):
-    id : Optional[str] = Field(None,alias="_id")
     name : str
     occupation : List[OccupationEnum]
     also_known : Optional[str] = None
@@ -23,6 +22,7 @@ class Artist(BaseModel):
     is_available: bool = True
 
 class UpdateArtist(Artist):
+    id: Optional[str] = None
     name : Optional[str] = None
     occupation : Optional[List[OccupationEnum]] = None
     also_known : Optional[str] = None

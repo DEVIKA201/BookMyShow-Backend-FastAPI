@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional , List
 
 from app.constants.enums import FacilitiesEnum
@@ -13,9 +13,7 @@ class LocationCreate(LocationBase):
 class LocationRead(LocationBase):
     location_id: Optional[int]=None
 
-    model_config = {
-    "from_attributes": True
-}
+    model_config=ConfigDict(from_attributes=True)
 
 ###### venue ######
 class VenueBase(BaseModel):
@@ -29,9 +27,7 @@ class VenueCreate(VenueBase):
 
 class VenueRead(VenueBase):
     venue_id:Optional[int]=None
-    model_config = {
-    "from_attributes": True
-}
+    model_config=ConfigDict(from_attributes=True)
 
 ######### SEAT LAYOUT #########
 class SeatRow(BaseModel):
@@ -59,11 +55,8 @@ class ScreenCreate(ScreenBase):
 class ScreenResponse(ScreenBase):
     screen_id: int
 
-    model_config = {
-    "from_attributes": True
-}
-        
-        
+    model_config=ConfigDict(from_attributes=True)
+
 class VenueResponse(BaseModel):
     venue_id: int
     venue_name: str
@@ -71,8 +64,5 @@ class VenueResponse(BaseModel):
     facilities: Optional[dict]
     screens: List[ScreenResponse] = [] 
 
-    model_config = {
-    "from_attributes": True
-}
-
+    model_config=ConfigDict(from_attributes=True)
 

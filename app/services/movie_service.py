@@ -7,14 +7,14 @@ from sqlalchemy import text
 from app.config.mongo_config import db
 from app.schemas.movie_schema import Movie, MovieUpdate
 
-#create a movie
+############### create a movie ############## 
 async def create_movie_service(movie:Movie):
     movie_dict = movie.model_dump(by_alias=True, exclude_none=True)
     result = await db["movie_details"].insert_one(movie_dict)
     movie_dict["_id"] = str(result.inserted_id)
     return movie_dict
 
-#Fetch all movies
+############### Fetch all movies ##############
 async def get_movies_services():
     movies = await db["movie_details"].find(
         {},
@@ -24,7 +24,7 @@ async def get_movies_services():
         movie["_id"] = str(movie["_id"])
     return movies
 
-#Fetch movies by id
+############### Fetch movies by id ##############
 #get artist details in cast and crew
 async def fetch_movie_by_id(movie_id:str):
     pipeline = [
@@ -133,9 +133,11 @@ async def delete_movie_by_id(movie_id:str):
         raise HTTPException(status_code=404,detail="Movie doesn't exist")
     return {"message":"Movie deleted successfully"}
 
-##################### Filter APIs ########################
+##################### Movie Filter APIs ########################
 
-###movie by location###
+###movie by location### 
+# -- returns the movie playing in a location by applying any or all of the filters
+
 async def get_movie_by_filter(location_name:str, s: Session,
                               language:Optional[str]=None, 
                               genre: Optional[str]=None,
@@ -181,21 +183,30 @@ async def get_movie_by_filter(location_name:str, s: Session,
     
     #movie_id (postgres) -> objectId (mongo query)
     object_ids = [ObjectId(m_ids) for m_ids in movie_ids]
-
     mongo_filter = {"_id":{"$in":object_ids}}
+
+    or_filters= []
+
     #---Language filter
     if language:
         language_list = [l.strip().capitalize() for l in language.split("|")]
-        mongo_filter["language"] = {"$in":language_list}
+        or_filters.append({"language":{"$in":language_list}})
+
+        #mongo_filter["language"] = {"$in":language_list}
     #---Genre filter
     if genre:
         genre_list = [g.strip().capitalize() for g in genre.split("|")]
-        mongo_filter["genre"] = {"$in":genre_list}
+        or_filters.append({"genre":{"$in":genre_list}})
+        #mongo_filter["genre"] = {"$in":genre_list}
 
     #--Format filter
     if format:
         format_list = [f.strip() for f in format.split("|")]
-        mongo_filter["format"] = {"$in":format_list}
+        or_filters.append({"format":{"$in":format_list}})
+        #mongo_filter["format"] = {"$in":format_list}
+
+    if or_filters:
+        mongo_filter["$or"] = or_filters
 
     #Query mongo to get those movies
     movie_collection = db["movie_details"]

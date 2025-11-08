@@ -34,6 +34,7 @@ class GenreEnum(str,Enum):
     Documentary = "Documentary"
     Musical = "Musical"
     Biography = "Biography"
+    Horror = "Horror"
 
 ######## Artists Enums #########
 class OccupationEnum(str, Enum):

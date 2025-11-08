@@ -22,6 +22,7 @@ class User(Base):
     landmark = Column(String, nullable=True)
     state = Column(String, nullable=True)
     city = Column(Integer,ForeignKey("locations.location_id"))
+    signed_in = Column(Boolean, default=True)
 
     __table_args__ = (
         CheckConstraint(

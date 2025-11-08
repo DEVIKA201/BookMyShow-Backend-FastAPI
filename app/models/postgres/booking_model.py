@@ -12,6 +12,7 @@ class BookingDetail(Base):
     booking_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.user_id"))
     schedule_id = Column(Integer, ForeignKey("show_schedules.schedule_id"))
+    show_id = Column(Integer, nullable=False)
     show_date = Column(Date, nullable=False)
     show_time = Column(Time, nullable=False)
     language = Column(String, nullable=False)

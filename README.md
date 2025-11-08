@@ -52,9 +52,9 @@ pip install -r requirements.txt<br>
 
 #Create a .env file in the root directory:
 
-MONGO_DATABASE_URL=mongodb://localhost:port<br>
-MONGO_DB=bms<br>
-POSTGRES_URL=postgresql://user:password@localhost:port/bms<br>
+MONGO_DATABASE_URL=mongodb://localhost:port/book_my_show_db?<br>
+MONGO_DB=book_my_show_db<br>
+POSTGRES_URL=postgresql://user:password@localhost:port/book_my_show_db<br>
 
 ### 5. Run the Application
 

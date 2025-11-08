@@ -1,4 +1,4 @@
-from pydantic import BaseModel,Field
+from pydantic import BaseModel,Field, ConfigDict
 from typing import Optional , List
 from datetime import datetime
 
@@ -32,10 +32,7 @@ class Movie(BaseModel):
     cast: Optional[List[CastCrew]] = None
     crew: Optional[List[CastCrew]] = None
 
-    model_config = {
-    "from_attributes": True
-}
-
+    model_config=ConfigDict(from_attributes=True)
 
 class MovieUpdate(Movie):
     title: Optional[str] =None

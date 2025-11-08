@@ -36,7 +36,7 @@ def completed_shows(db:Session):
             )
     
     #3. activate next day
-    activate_dates = [current_date+timedelta(days=i) for i in range(3)]
+    activate_dates = [current_date+timedelta(days=i) for i in range(1,4)]
 
     #next_day = current_date+timedelta(days=1)
     db.query(ShowTiming).filter(

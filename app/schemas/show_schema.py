@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from datetime import time, date, timezone
+from pydantic import BaseModel, ConfigDict
+from datetime import time, date
 from app.constants.enums import FormatEnum
 
 ######### SHOW SCHEDULE - movie #########
@@ -13,8 +13,8 @@ class ShowScheduleCreate(ShowSchedules):
 
 class ShowScheduleRead(ShowSchedules):
     schedule_id : int
-    model_config={"from_attributes":True}
-
+    model_config=ConfigDict(from_attributes=True)
+    
 ######### SHOW TIMINGS #########
 class ShowScheduleTimings(BaseModel):
     schedule_id : int
@@ -30,4 +30,4 @@ class ShowTimingCreate(ShowScheduleTimings):
 
 class ShowTimingRead(ShowScheduleTimings):
     show_id : int
-    model_config ={"from_attributes": True}
+    model_config=ConfigDict(from_attributes=True)

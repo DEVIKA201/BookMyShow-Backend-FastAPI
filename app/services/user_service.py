@@ -1,16 +1,30 @@
 from sqlalchemy.orm import Session
 
 from app.models.postgres.user_model import User
-from app.schemas.user_schema import UserCreate, UserUpdate
+from app.schemas.user_schema import  UserUpdate, UserLogin
 
 ############ User CRUD #########
+def user_login(db: Session, data: UserLogin):
+    # Look for an existing user by phone or email
+    user = None
+    if data.phone_no:
+        user = db.query(User).filter(User.phone_no == data.phone_no).first()
+    if not user and data.email:
+        user = db.query(User).filter(User.email == data.email).first()
 
-def create_user(db:Session, data: UserCreate):
-    user = User(**data.model_dump())
-    db.add(user)
+    if user:
+        user.signed_in = True
+        db.commit()
+        db.refresh(user)
+        return {"message": "Login successful", "user": user}
+
+    # If user doesn't exist, create new
+    new_user = User(**data.model_dump())
+    db.add(new_user)
     db.commit()
-    db.refresh(user)
-    return user
+    db.refresh(new_user)
+
+    return {"message": "New user created and logged in", "user": new_user}  
 
 def read_user(db:Session, user_id: int | None = None):
     query = db.query(User)
@@ -29,9 +43,8 @@ def update_user(db:Session,user: UserUpdate, user_id: int):
     db.refresh(update_query)
     return update_query
 
-def delete_user(db:Session, user_id:int):
-    delete_query = db.query(User).filter(User.user_id == user_id).first()
-    if delete_query:
-        db.delete(delete_query)
-        db.commit()
-    return delete_query
+def sign_out_user(db:Session,user_id: str):
+    user = db.query(User).filter(User.user_id==user_id).first()
+    if user:
+        user.signed_in=False
+    return {"message":"You've signed+out successfully"}
