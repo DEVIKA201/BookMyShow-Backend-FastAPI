@@ -5,7 +5,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 
 from app.models.postgres.show_model import ShowSchedule, ShowTiming
-from app.schemas.show_schema import ShowScheduleCreate, ShowTimingCreate
+from app.schemas.show_schema import ShowScheduleCreate
 from app.constants.enums import LanguageEnum,FormatEnum
 
 ############### SCHEDULE CREATE SERVICE ####################
@@ -200,9 +200,7 @@ async def get_shows_by_movie_and_location(db_pg: Session, db_mongo, location_nam
 
     if not format or not language:
         options = await get_available_options(db_pg, movie_id, location_id)
-        #debug
-        print(options)
-        
+
         if not options["formats"] and not options["languages"]:
             raise HTTPException(status_code=404, detail="No running shows")
         return {

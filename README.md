@@ -59,4 +59,3 @@ POSTGRES_URL=postgresql://user:password@localhost:port/book_my_show_db<br>
 ### 5. Run the Application
 
 uvicorn main:app --reload<br>
-

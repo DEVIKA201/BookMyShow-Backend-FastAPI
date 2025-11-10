@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.routes import admin_routes, user_routes
 import asyncio
-from app.tasks.auto_unlock import auto_unlock_expired_seats
+from app.background_tasks.auto_unlock import auto_unlock_expired_seats
 from app.config.postgres_config import engine
 from app.models.postgres import Base
 

@@ -2,7 +2,6 @@ from pydantic import BaseModel,Field, ConfigDict
 from typing import Optional , List
 from datetime import datetime
 
-
 from app.constants.enums import GenreEnum, FormatEnum, LanguageEnum
 from app.schemas.artist_schema import CastCrew
 
@@ -15,7 +14,6 @@ class AllMovies(BaseModel):
     format : Optional[FormatEnum]=None
 
 class Movie(BaseModel):
-    id: Optional[str] = Field(None,alias="_id")
     title: str
     date_of_release: datetime
     duration: str
@@ -34,7 +32,8 @@ class Movie(BaseModel):
 
     model_config=ConfigDict(from_attributes=True)
 
-class MovieUpdate(Movie):
+class MovieUpdate(BaseModel):
+    id:Optional[str]=None
     title: Optional[str] =None
     date_of_release: Optional[datetime] = None
     duration: Optional[str] = None

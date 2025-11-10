@@ -100,7 +100,7 @@ async def get_artist_by_id(artist_id:str):
 
 ############### Update an artist ##############
 async def update_artist(artist_id: str, artist: UpdateArtist):
-    update_data = artist.model_dump(by_alias=True, exclude_none=True)
+    update_data = artist.model_dump(exclude_unset=True)
     result = await db["artist_details"].update_one(
         {"_id":ObjectId(artist_id)},
         {"$set":update_data}
@@ -108,7 +108,7 @@ async def update_artist(artist_id: str, artist: UpdateArtist):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Artist not found!")
     updated_artist = await db["artist_details"].find_one({"_id":ObjectId(artist_id)})
-    updated_artist["_id"] = str(updated_artist["_id"])
+    updated_artist["id"] = str(updated_artist["_id"])
     return updated_artist    
 
 ############### Delete artist ##############

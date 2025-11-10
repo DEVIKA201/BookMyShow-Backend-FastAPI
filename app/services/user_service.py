@@ -46,5 +46,8 @@ def update_user(db:Session,user: UserUpdate, user_id: int):
 def sign_out_user(db:Session,user_id: str):
     user = db.query(User).filter(User.user_id==user_id).first()
     if user:
-        user.signed_in=False
-    return {"message":"You've signed+out successfully"}
+        user.signed_in = False
+        db.commit()
+        db.refresh(user)
+
+    return {"message": "User signed out successfully"}

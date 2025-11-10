@@ -1,25 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.config.mongo_config import get_mongo_db
 from app.config.postgres_config import get_db
 
 admin_router = APIRouter(prefix="/admin")
-
-# ------------------- USERS -------------------
-from app.schemas.user_schema import UserRead
-from app.services.user_service import read_user
-
-@admin_router.get("/", tags=["Admin - Users"],response_model=UserRead | list[UserRead])
-async def get_users(
-    user_id : Optional[int] = None,
-    db: Session = Depends(get_db)
-):
-    user = read_user(db, user_id)
-    if user_id is not None and not user:
-        raise HTTPException(status_code=404, detail="User not found!")
-    return user
 
 # ------------------- ARTISTS -------------------
 from app.schemas.artist_schema import Artist, DeleteArtist,UpdateArtist
@@ -36,7 +21,7 @@ async def read_all_artist():
     return await get_artists()
 
 #Update artist details
-@admin_router.put("/artists/{artist_id}",tags=["Admin - Artists"], response_model=UpdateArtist)
+@admin_router.patch("/artists/{artist_id}",tags=["Admin - Artists"], response_model=UpdateArtist)
 async def update_artist_by_id(artist_id:str, artist: UpdateArtist):
     return await update_artist(artist_id,artist)
 
@@ -56,7 +41,7 @@ async def create_movie(movie:Movie):
     return await create_movie_service(movie)
 
 #Update movie by id
-@admin_router.put("/movies/{movie_id}",tags=["Admin - Movies"], response_model=MovieUpdate)
+@admin_router.patch("/movies/{movie_id}",tags=["Admin - Movies"], response_model=MovieUpdate)
 async def update_movie(movie_id:str, movie:MovieUpdate):
     return await update_movie_by_id(movie_id, movie)
 

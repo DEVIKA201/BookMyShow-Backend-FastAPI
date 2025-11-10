@@ -34,7 +34,7 @@ async def auto_unlock_expired_seats():
 ########### FastAPI BackgroundScheduler###########
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from app.tasks.auto_unlock import auto_unlock_expired_seats
+from app.background_tasks.auto_unlock import auto_unlock_expired_seats
 from app.services.show_service import completed_shows
 
 ### Auto unlock expired seats

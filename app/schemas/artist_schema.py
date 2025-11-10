@@ -21,8 +21,8 @@ class Artist(BaseModel):
     peer_and_more : Optional[List[CastCrew]] = None
     is_available: bool = True
 
-class UpdateArtist(Artist):
-    id: Optional[str] = None
+class UpdateArtist(BaseModel):
+    id:Optional[str]=None
     name : Optional[str] = None
     occupation : Optional[List[OccupationEnum]] = None
     also_known : Optional[str] = None
@@ -32,7 +32,6 @@ class UpdateArtist(Artist):
     spouse : Optional[str] = None
     family : Optional[List[CastCrew]] = None  
     peer_and_more : Optional[List[CastCrew]] = None  
-    is_available: bool = True
 
 class DeleteArtist(BaseModel):
     message: str

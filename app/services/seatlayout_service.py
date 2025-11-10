@@ -41,8 +41,7 @@ def seat_availability(db:Session, show_id: int, select_seats:int=1):
             row_to_cat[row_name.upper()] = cat_name
     
     #seat count per category
-    total_by_category = {cat["name"]: 0 for cat in category_info}
-    available_by_category = {cat["name"]:0 for cat in category_info}
+    available_by_category = {cat["name"]:[] for cat in category_info}
 
     booked_seats = db.query(BookingDetail).filter(BookingDetail.show_id==show_id).all()
     locked_seats = db.query(ShowSeatMap).filter(ShowSeatMap.show_id==show_id).all()
@@ -70,20 +69,26 @@ def seat_availability(db:Session, show_id: int, select_seats:int=1):
             continue
         
         for seat_number in row["seats"]:
-            total_by_category[category]+=1
-            key = (row_name,seat_number)
-
+            key = (row_name, seat_number)
             if key not in booked_set and key not in locked_set:
-                available_by_category[category]+=1
+                available_by_category[category].append({
+                    "row_name": row_name,
+                    "seat_number": seat_number
+                })
+
 
     #dynamic seat status checking
     category_status = {}
-    for cat, total in total_by_category.items():
-        available = available_by_category.get(cat,0)
+    for cat in category_info:
+        cat_name = cat["name"]
+        total = sum(1 for row in rows_info if row_to_cat.get(row["row"].upper()) == cat_name for _ in row["seats"])
+        available = len(available_by_category[cat_name])
+      
         if total ==0:
             continue
+        
+        #Update the seat filling status
         percent_left = (available/total)*100
-
         if available ==0:
             status = SeatStatus.Sold_Out.value
         elif percent_left>0 and percent_left<=10:
@@ -93,10 +98,10 @@ def seat_availability(db:Session, show_id: int, select_seats:int=1):
         else:
             status = SeatStatus.Available.value
 
-        category_status[cat] = {
-            "price": f" {cat_to_price[cat]}",
-            "available":available,
-            "total":total,
+        category_status[cat_name] = {
+            "price": f" {cat_to_price[cat_name]}",
+            "available seats":available_by_category[cat_name],
+            "total":available,
             "status":status
         }
     

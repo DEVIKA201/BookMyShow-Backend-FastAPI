@@ -17,6 +17,19 @@ from app.services.user_service import user_login, update_user,sign_out_user
 async def create_new_user(user:UserLogin, db:Session= Depends(get_db)):
     return user_login(db, user)
 
+from app.schemas.user_schema import UserRead
+from app.services.user_service import read_user
+
+@user_router.get("/", tags=["User - Users"],response_model=UserRead | list[UserRead])
+async def get_users(
+    user_id : Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    user = read_user(db, user_id)
+    if user_id is not None and not user:
+        raise HTTPException(status_code=404, detail="User not found!")
+    return user
+
 #Update user
 @user_router.put("/{user_id}", tags=["User - Users"], response_model=UserRead)
 async def update_existing_user(user:UserUpdate, user_id:int, db: Session=Depends(get_db)):
@@ -26,8 +39,8 @@ async def update_existing_user(user:UserUpdate, user_id:int, db: Session=Depends
     return update_existing_user
 
 #User Sign Out
-@user_router.delete("/{user_id}", tags=["User - Users"], response_model= UserRead)
-async def delete_existing_user(user_id:int, db:Session = Depends(get_db)):
+@user_router.delete("/{user_id}", tags=["User - Users"])
+async def user_sign_out(user_id:int, db:Session = Depends(get_db)):
     delete_existing_user = sign_out_user(db,user_id)
     if delete_existing_user:
         return delete_existing_user
@@ -91,7 +104,7 @@ def lock_seats(req: LockSeatsRequest, db: Session = Depends(get_db)):
     return lock_or_unlock_seats(db, req, lock=True)
 
 # Seat availability
-@user_router.get("/availability",tags=["User - Seat Layout"])
+@user_router.get("/seat_layout/availability",tags=["User - Seat Layout"])
 def get_seat_availability(
     show_id: int = Query(..., description="Show ID for which seat availability is needed"),
     select_seats: int = Query(1, ge=1, le=10, description="Number of seats user wants to book"),

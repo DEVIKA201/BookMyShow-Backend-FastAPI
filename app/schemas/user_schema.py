@@ -15,8 +15,6 @@ class UserLogin(BaseModel):
         return self
 
 class UserUpdate(BaseModel):
-    phone_no: Optional[str]= None
-    email: Optional[EmailStr]= None
     first_name: Optional[str]=None
     last_name: Optional[str]=None
     bday : Optional[date] = None
@@ -35,6 +33,3 @@ class UserRead(UserUpdate):
 class UserLoginResponse(BaseModel):
     message: str
     user: UserRead
-
-class DeleteUser(BaseModel):
-    message: str

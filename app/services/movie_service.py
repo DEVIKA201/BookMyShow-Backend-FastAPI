@@ -112,7 +112,7 @@ async def fetch_movie_by_id(movie_id:str):
     
 #Update movie by id
 async def update_movie_by_id(movie_id:str, movie:MovieUpdate):
-    update_data = movie.model_dump(by_alias=True, exclude_none=True)
+    update_data = movie.model_dump(exclude_unset=True)
     result = await db["movie_details"].update_one(
         {"_id":ObjectId(movie_id)},
         {"$set":update_data}
@@ -120,7 +120,7 @@ async def update_movie_by_id(movie_id:str, movie:MovieUpdate):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Movie not found!")
     updated_movie = await db["movie_details"].find_one({"_id":ObjectId(movie_id)})
-    updated_movie["_id"] = str(updated_movie["_id"])
+    updated_movie["id"] = str(updated_movie["_id"])
     return updated_movie
 
 #Delete movie by id
