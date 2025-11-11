@@ -18,5 +18,7 @@ class BookingDetail(Base):
     language = Column(String, nullable=False)
     format = Column(String, nullable=False)
     total_amount = Column(Float)
+    discount_amount = Column(Float, default=0)
+    promo_code = Column(String, nullable=True)
     booked_at = Column(DateTime, default=func.now())
     seats = Column(JSONB)  # [{row, seat_number, category, price}]

@@ -56,6 +56,7 @@ async def get_booking_info(db: Session, db_mongo, user_id: int):
     ]
 
 ############### CONFIRM BOOKING SERVICE ####################
+from app.services.promocode_service import validate_promocode
 def confirm_booking(db: Session, data):
     now = datetime.now(timezone.utc)
 
@@ -112,6 +113,11 @@ def confirm_booking(db: Session, data):
             seat_map.locked_seats.remove(seat_dict)
             seat_map.booked_seats.append(seat_dict)
 
+    # ✅ Apply promo code before saving booking
+    final_amount, promo_info = validate_promocode(
+        db, getattr(data, "promo_code", None), data.user_id, len(seat_details), total
+    )
+
     booking = BookingDetail(
         user_id=data.user_id,
         schedule_id=data.schedule_id,
@@ -119,8 +125,11 @@ def confirm_booking(db: Session, data):
         show_time = show_timing.show_time,
         format = show_timing.format,
         language = show_timing.language,
-        total_amount=total,
-        seats=seat_details
+        total_amount=final_amount,
+        seats=seat_details,
+        show_id = show_timing.show_id,
+        promo_code=promo_info["code"] if promo_info else None,
+        discount_amount=promo_info["discount"] if promo_info else 0
     )
 
     db.add(booking)
@@ -129,8 +138,10 @@ def confirm_booking(db: Session, data):
 
     return {
         "booking_id": booking.booking_id,
-        "total_amount": total,
+        "total_amount": final_amount,
         "seats": seat_details,
+        "discount_applied": promo_info["discount"] if promo_info else 0,
+        "promo_code": promo_info["code"] if promo_info else None,
         "booked_at": booking.booked_at
     }
 

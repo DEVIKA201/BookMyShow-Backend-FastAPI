@@ -360,7 +360,7 @@
 							"response": []
 						}
 					],
-					"description": "1. Confirm Booking\n    \n\nThis request handles the confirmation of the locked seats. The seat layout info, along with the show date, time, language, format, total amount, etc. are stored corresponding to the user.\n\n2\\. User Orders\n\nThis API fetches the till booked movie and seat metadata."
+					"description": "1. Confirm Booking\n    \n\nThis request handles the confirmation of the locked seats. The seat layout info, along with the show date, time, language, format, total amount, etc. are stored corresponding to the user.\n\nAlso allows the user to enter the promo codes, if any. The service checks whether the code is valid and accordingly updates the total ticket amount. If code is invalid or expired, it raises an invalid code error.\n\n2\\. User Orders\n\nThis API fetches the till booked movie along with promo code applied and seat metadata."
 				}
 			],
 			"description": "The folder contains APIs that are to the user workflow.\n\nIt contains Authentication - user login and detail updation, Browsing movies and shows, Confirmation of seats and its Booking."
@@ -725,9 +725,58 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Promo Code Creation",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}/admin/offers/promocodes/",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"admin",
+										"offers",
+										"promocodes",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Promo Codes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}/admin/offers/promocodes/",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"admin",
+										"offers",
+										"promocodes",
+										""
+									]
+								}
+							},
+							"response": []
 						}
 					],
-					"description": "1. New Schedules\n    \n\nThis request creates the movie, screen and venue mapping as a schedule. This schedule ID is referenced in multiple areas to select the required show for booking.\n\n2\\. New Shows\n\nThe request handles creation of new shows and their timings.\n\nThe timings can be created for a particular schedule for set number of days. The show will be displayed for those many days - mentioned in days_ahead query parameter"
+					"description": "1. New Schedules\n    \n\nThis request creates the movie, screen and venue mapping as a schedule. This schedule ID is referenced in multiple areas to select the required show for booking.\n\n2\\. New Shows\n\nThe request handles creation of new shows and their timings.\n\nThe timings can be created for a particular schedule for set number of days. The show will be displayed for those many days - mentioned in days_ahead query parameter\n\n4\\. Promo Code Creation\n\nCreate promo codes that can be used by the user while booking confirmation.\n\n5\\. Get Promo Codes\n\nFetches all the promocodes along with their availability status from the database."
 				}
 			]
 		}
@@ -759,8 +808,7 @@
 	"variable": [
 		{
 			"key": "baseURL",
-			"value": "",
-			"disabled": true
+			"value": ""
 		}
 	]
 }
