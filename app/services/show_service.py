@@ -19,7 +19,7 @@ def create_schedule(db: Session, schedule_info: ShowScheduleCreate):
 ############### MARK COMPLETED SHOWS #######################
 def completed_shows(db:Session):
     current_date = datetime.now().date()
-    current_time = datetime.now().time()
+    current_time = (datetime.now()- timedelta(minutes=30)).replace(second=0, microsecond=0).time()
     
     #1. past shows --> completed
     db.query(ShowTiming).filter(

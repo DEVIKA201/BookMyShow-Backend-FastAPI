@@ -4,10 +4,10 @@ from app.models.postgres.seatlayout_model import ShowSeatMap
 from app.models.postgres.booking_model import BookingDetail
 from app.models.postgres.show_model import ShowTiming, ShowSchedule
 from app.models.postgres.venue_model import Screen
+from app.schemas.seatlayout_schema import SeatSelection
 from app.constants.enums import SeatStatus
 from datetime import datetime,timezone
 
-LOCK_CACHE = {}  
 LOCK_EXPIRY_MINUTES = 10
 
 ############### SEATS AVAILABILITY SERVICE ####################
@@ -114,52 +114,64 @@ def seat_availability(db:Session, show_id: int, select_seats:int=1):
 
 ############### LOCK/UNLOCK SEATS SERVICE ####################
 
-def lock_or_unlock_seats(db: Session, data, lock: bool = True):
+def lock_or_unlock_seats(db: Session, schedule_id: int, show_id: int, seats: list[SeatSelection], lock: bool = True):
 
     now = datetime.now(timezone.utc)
 
     seat_map = (
         db.query(ShowSeatMap)
-        .filter(ShowSeatMap.schedule_id == data.schedule_id,
-                ShowSeatMap.show_id == data.show_id)
+        .filter(
+            ShowSeatMap.schedule_id == schedule_id,
+            ShowSeatMap.show_id == show_id
+        )
         .first()
     )
 
     if not seat_map:
-        seat_map = ShowSeatMap(schedule_id=data.schedule_id, show_id=data.show_id)
+        seat_map = ShowSeatMap(schedule_id=schedule_id, show_id=show_id)
         db.add(seat_map)
         db.commit()
         db.refresh(seat_map)
 
+# Normalize seats → Expand row + list of seat numbers
+    normalized_seats = []
+    for s in seats:
+    # Support dict or schema
+        row = s["row_name"] if isinstance(s, dict) else s.row_name
+        nums = s["seat_number"] if isinstance(s, dict) else s.seat_number
+
+    # nums is a list → expand
+        for seat_number in nums:
+            normalized_seats.append({
+                "row_name": row,
+                "seat_number": seat_number
+            })
+
+
+    # -------------------- LOCK FLOW --------------------
     if lock:
-        for s in data.seats:
-            for num in s.seat_number:
-                seat_dict = {"row_name": s.row_name, "seat_number": num}
-                key = (data.schedule_id, data.show_id, s.row_name, num)
+        for seat in normalized_seats:
+            if seat in seat_map.locked_seats or seat in seat_map.booked_seats:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Seat {seat['row_name']}{seat['seat_number']} is unavailable"
+                )
 
-                # Recheck seat availability
-                if seat_dict in seat_map.locked_seats or seat_dict in seat_map.booked_seats:
-                    raise HTTPException(status_code=400, detail=f"Seat {s.row_name}{num} unavailable")
-                seat_map.locked_at = now
-                # Lock seat + cache time
-                seat_map.locked_seats.append(seat_dict)
-                LOCK_CACHE[key] = now
+        for seat in normalized_seats:
+            seat_map.locked_seats.append(seat)
 
+        seat_map.locked_at = now
         db.commit()
         return {"message": "Seats locked"}
 
+    # -------------------- UNLOCK FLOW --------------------
     else:
-        # Unlock flow
-        for s in data.seats:
-            for num in s.seat_number:
-                seat_dict = {"row_name": s.row_name, "seat_number": num}
-                key = (data.schedule_id, data.show_id, s.row_name, num)
-                if seat_dict in seat_map.locked_seats:
-                    seat_map.locked_seats.remove(seat_dict)
-                    if not seat_map.locked_seats:  # all unlocked
-                        seat_map.locked_at = None
+        for seat in normalized_seats:
+            if seat in seat_map.locked_seats:
+                seat_map.locked_seats.remove(seat)
 
-                LOCK_CACHE.pop(key, None)
+        if not seat_map.locked_seats:
+            seat_map.locked_at = None
 
         db.commit()
         return {"message": "Seats unlocked"}

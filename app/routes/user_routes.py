@@ -100,8 +100,9 @@ from app.services.seatlayout_service import lock_or_unlock_seats, seat_availabil
 
 # Seat lock 
 @user_router.post("/lock",tags=["User - Seat Layout"])
-def lock_seats(req: LockSeatsRequest, db: Session = Depends(get_db)):
-    return lock_or_unlock_seats(db, req, lock=True)
+def lock_seats(req: LockSeatsRequest,db: Session = Depends(get_db)):
+    return lock_or_unlock_seats(db=db,schedule_id=req.schedule_id, show_id=req.show_id,
+                                seats=req.seats ,lock=True)
 
 # Seat availability
 @user_router.get("/seat_layout/availability",tags=["User - Seat Layout"])
@@ -112,17 +113,45 @@ def get_seat_availability(
 ):
     return seat_availability(db, show_id=show_id, select_seats=select_seats)
 
+# ------------------- PAYMENT -------------------
+from app.schemas.payment_schema import (
+    PaymentPreviewRequest,PaymentPreviewResponse,
+    CancelPaymentRequest, ConfirmPaymentRequest,
+    ConfirmPaymentResponse, InitiatePaymentRequest,
+    InitiatePaymentResponse
+)
+from app.config.postgres_config import get_db
+from app.services.payment_service import (
+    service_payment_preview,
+    service_initiate_payment,
+    service_confirm_payment,
+    service_cancel_payment
+)
+
+@user_router.post("/preview",tags=["User - Payment"] ,response_model=PaymentPreviewResponse)
+def route_payment_preview(payload: PaymentPreviewRequest, db: Session = Depends(get_db)):
+    return service_payment_preview(db, payload)
+
+
+@user_router.post("/initiate", tags=["User - Payment"] ,response_model=InitiatePaymentResponse)
+def route_initiate_payment(payload: InitiatePaymentRequest, db: Session = Depends(get_db)):
+    return service_initiate_payment(db, payload)
+
+
+@user_router.post("/confirm", tags=["User - Payment"] ,response_model=ConfirmPaymentResponse)
+def route_confirm_payment(payload: ConfirmPaymentRequest, db: Session = Depends(get_db)):
+    return service_confirm_payment(db, payload)
+
+
+@user_router.post("/cancel",tags=["User - Payment"])
+def route_cancel_payment(payload: CancelPaymentRequest, db: Session = Depends(get_db)):
+    return service_cancel_payment(db, payload)
 
 # ------------------- BOOKING -------------------
-from app.schemas.booking_schema import  ConfirmBookingRequest
-from app.services.booking_service import confirm_booking, get_booking_info
-
-# Confirm booking 
-@user_router.post("/confirm", tags=["User - Booking"])
-def confirm(req: ConfirmBookingRequest, db: Session = Depends(get_db)):
-    return confirm_booking(db, req)
+from app.services.booking_service import get_booking_info
 
 # Get booking info 
 @user_router.get("/bookings/{user_id}", tags=["User - Booking"])
 async def booking_info(user_id:int, db_mongo = Depends(get_mongo_db),db:Session=Depends(get_db)):
     return await get_booking_info(db,db_mongo,user_id)
+

@@ -6,6 +6,7 @@ from app.schemas.seatlayout_schema import LockSeatsRequest, SeatInfo
 
 class ConfirmBookingRequest(LockSeatsRequest):
     promo_code : Optional[str]=None
+    
     model_config=ConfigDict(from_attributes=True)
 
 class BookingResponse(BaseModel):
