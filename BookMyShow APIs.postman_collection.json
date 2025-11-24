@@ -311,7 +311,67 @@
 					"description": "1. **Filter Locations**\n    \n\nThis request is to fetch all the locations available within the platform. Select a location of your choice.\n\n2\\. **Movies in Location**\n\nThe request fetches the movies from the Mongo DB movie_details collection and displays the movies that runs on theaters at your selected location. The location, theater details are stored in PostgreSQL.\n\nLocation ID is a mandatory path parameter. Language, Genre, Format are all query parameters which are optional. One more more of there parameters can be selected and the request filters the shows running in theaters at your location and displays the movies that are thus available.\n\n**3.** Movie Info\n\nThis request gives the movie metadata- including the cast and crew metadata from the artist_details collection in MongoDB.\n\n4\\. Available Shows\n\nThis request takes you to the select desired show page in the application. It displays the shows of the selected movie available at your location. All the query parameters in this case are mandatory to return the desired show informations.\n\nIt gives the show date, time, venue and the filter information of your desired show.\n\n5\\. Venue Filter shows\n\nSimilar to the \"Available Shows request\", this request gives you the show details based on Venue search functionality. It gives you details of all the movies and their shows for the required date in that venue.\n\n6\\. Seat Availability\n\nThe seat availability request gives the available seats and their status - Available, Sold Out, Fast Filling; along with the currently unlocked/Not booked seats.  \nThis response can be referred to select the required row and seat number to be booked.\n\nShow ID and Number of seats required are mandatory fields for desired results.\n\n7\\. Lock Required seat\n\nThe request handles locking of the required seats for a time limit of 10mins. Within that duration, the seat must be booked, else it'll be auto unlocked for another booking.\n\nSchedule ID, Show ID along with the User ID are important fields to be passed for this request.\n\nThe entries of this request are unique to the Show ID. The seats selected for locking for a particular show are temporarily stored in the locked_seats array with the locked_time. As the particular seats are booked, they are added to the booking_details of the corresponding user."
 				},
 				{
-					"name": "Confirm Booking",
+					"name": "Payment and Booking Initialising",
+					"item": [
+						{
+							"name": "Payment Preview",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}/user/preview",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"user",
+										"preview"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Initiate payment",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}/user/initiate",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"user",
+										"initiate"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "1. Payment Preview\n    \n\nIt shows the preview of the payment. The user ID, selected seats, promocode (if any) and the discounted price are all calculated and the preview of the same is shown to the user. The user, after confirming the preview, is redirected to the payment initiate page.\n\n2\\. Payment initiate\n\nThe initiate payment API accepts all the above information and provides a payment ID and total amount payable, which is passed onto the desired payment gateway. The gateway confirms the payment and returns a transaction ID which id done in confirm payment API."
+				},
+				{
+					"name": "Bookings",
 					"item": [
 						{
 							"name": "Confirm Booking",
@@ -341,6 +401,33 @@
 							"response": []
 						},
 						{
+							"name": "Cancel booking",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}/user/cancel",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"user",
+										"cancel"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "User Orders",
 							"request": {
 								"method": "GET",
@@ -360,7 +447,7 @@
 							"response": []
 						}
 					],
-					"description": "1. Confirm Booking\n    \n\nThis request handles the confirmation of the locked seats. The seat layout info, along with the show date, time, language, format, total amount, etc. are stored corresponding to the user.\n\nAlso allows the user to enter the promo codes, if any. The service checks whether the code is valid and accordingly updates the total ticket amount. If code is invalid or expired, it raises an invalid code error.\n\n2\\. User Orders\n\nThis API fetches the till booked movie along with promo code applied and seat metadata."
+					"description": "1. Confirm Booking\n    \n\nThis request handles the confirmation of the locked seats. It accepts the payment id and the gateway transaction id to confirm the payment status\n\n2\\. Cancel Booking\n\nThe booking can be cancelled by giving the payment id.\n\n3\\. User Orders\n\nThis API fetches the till booked movie along with promo code applied and seat metadata."
 				}
 			],
 			"description": "The folder contains APIs that are to the user workflow.\n\nIt contains Authentication - user login and detail updation, Browsing movies and shows, Confirmation of seats and its Booking."
